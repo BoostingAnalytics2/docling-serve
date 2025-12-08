@@ -212,15 +212,13 @@ def auto_set_return_as_file(
     url_input_value: str,
     file_input_value: Optional[list[str]],
     image_export_mode_value: str,
-    table_export_mode_value: str = "inline",
 ):
     # If more than one input source is provided, return as file
-    # Also force file output when using referenced modes (which require file artifacts)
+    # Also force file output when using image referenced mode (which requires file artifacts)
     if (
         (len(url_input_value.split(",")) > 1)
         or (file_input_value and len(file_input_value) > 1)
         or (image_export_mode_value == "referenced")
-        or (table_export_mode_value == "html_referenced")
     ):
         return True
     else:
@@ -747,22 +745,17 @@ with gr.Blocks(
     # Handle Return as File
     url_input.change(
         auto_set_return_as_file,
-        inputs=[url_input, file_input, image_export_mode, table_export_mode],
+        inputs=[url_input, file_input, image_export_mode],
         outputs=[return_as_file],
     )
     file_input.change(
         auto_set_return_as_file,
-        inputs=[url_input, file_input, image_export_mode, table_export_mode],
+        inputs=[url_input, file_input, image_export_mode],
         outputs=[return_as_file],
     )
     image_export_mode.change(
         auto_set_return_as_file,
-        inputs=[url_input, file_input, image_export_mode, table_export_mode],
-        outputs=[return_as_file],
-    )
-    table_export_mode.change(
-        auto_set_return_as_file,
-        inputs=[url_input, file_input, image_export_mode, table_export_mode],
+        inputs=[url_input, file_input, image_export_mode],
         outputs=[return_as_file],
     )
 
