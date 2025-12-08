@@ -21,6 +21,7 @@ from docling.datamodel.pipeline_options import (
     TableFormerMode,
     TableStructureOptions,
 )
+from docling_core.types.doc.base import TableRefMode
 
 from docling_serve.helper_functions import _to_list_of_strings
 from docling_serve.settings import docling_serve_settings, uvicorn_settings
@@ -295,6 +296,7 @@ def process_url(
     input_sources,
     to_formats,
     image_export_mode,
+    table_export_mode,
     pipeline,
     ocr,
     force_ocr,
@@ -317,6 +319,7 @@ def process_url(
         "options": {
             "to_formats": to_formats,
             "image_export_mode": image_export_mode,
+            "table_export_mode": table_export_mode,
             "pipeline": pipeline,
             "ocr": ocr,
             "force_ocr": force_ocr,
@@ -378,6 +381,7 @@ def process_file(
     files,
     to_formats,
     image_export_mode,
+    table_export_mode,
     pipeline,
     ocr,
     force_ocr,
@@ -406,6 +410,7 @@ def process_file(
         "options": {
             "to_formats": to_formats,
             "image_export_mode": image_export_mode,
+            "table_export_mode": table_export_mode,
             "pipeline": pipeline,
             "ocr": ocr,
             "force_ocr": force_ocr,
@@ -628,6 +633,15 @@ with gr.Blocks(
                     label="Image Export Mode",
                     value="embedded",
                 )
+            with gr.Column(scale=1):
+                table_export_mode = gr.Radio(
+                    [
+                        ("Inline", TableRefMode.INLINE.value),
+                        ("HTML Referenced", TableRefMode.HTML_REFERENCED.value),
+                    ],
+                    label="Table Export Mode",
+                    value=TableRefMode.INLINE.value,
+                )
 
         with gr.Row():
             with gr.Column(scale=1, min_width=200):
@@ -774,6 +788,7 @@ with gr.Blocks(
             url_input,
             to_formats,
             image_export_mode,
+            table_export_mode,
             pipeline,
             ocr,
             force_ocr,
@@ -862,6 +877,7 @@ with gr.Blocks(
             file_input,
             to_formats,
             image_export_mode,
+            table_export_mode,
             pipeline,
             ocr,
             force_ocr,

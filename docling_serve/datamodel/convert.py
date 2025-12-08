@@ -7,6 +7,7 @@ from docling.datamodel.pipeline_options import (
     EasyOcrOptions,
 )
 from docling.models.factories import get_ocr_factory
+from docling_core.types.doc.base import TableRefMode
 from docling_jobkit.datamodel.convert import ConvertDocumentsOptions
 
 from docling_serve.settings import docling_serve_settings
@@ -38,3 +39,16 @@ class ConvertDocumentsRequestOptions(ConvertDocumentsOptions):
             le=docling_serve_settings.max_document_timeout,
         ),
     ] = docling_serve_settings.max_document_timeout
+
+    table_export_mode: Annotated[
+        TableRefMode,
+        Field(
+            description=(
+                "Table export mode for markdown output. "
+                "Allowed values: 'inline' (render as markdown table), "
+                "'html_referenced' (export as HTML file and reference it). "
+                "Optional, defaults to 'inline'."
+            ),
+            examples=["inline", "html_referenced"],
+        ),
+    ] = TableRefMode.INLINE
