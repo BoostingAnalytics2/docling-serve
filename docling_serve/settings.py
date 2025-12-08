@@ -48,6 +48,10 @@ class DoclingServeSettings(BaseSettings):
     result_removal_delay: float = 300  # 5 minutes
     load_models_at_boot: bool = True
     options_cache_size: int = 2
+    
+    # Memory management settings
+    auto_clear_converters_interval: Optional[float] = None  # Interval in seconds for auto-clearing (None = disabled)
+    clear_converters_after_n_tasks: Optional[int] = None  # Clear after N tasks (None = disabled)
     enable_remote_services: bool = False
     allow_external_plugins: bool = False
     show_version_info: bool = True

@@ -116,6 +116,26 @@ for handler in root_logger.handlers:  # Iterate through existing handlers
 _log = logging.getLogger(__name__)
 
 
+# Background task for periodic memory cleanup
+async def _periodic_memory_cleanup(orchestrator: BaseOrchestrator):
+    """Periodically clear converters to free memory."""
+    interval = docling_serve_settings.auto_clear_converters_interval
+    if interval is None or interval <= 0:
+        return
+    
+    _log.info(f"Starting periodic memory cleanup task (interval: {interval}s)")
+    while True:
+        try:
+            await asyncio.sleep(interval)
+            _log.info("Running scheduled memory cleanup...")
+            await orchestrator.clear_converters()
+        except asyncio.CancelledError:
+            _log.info("Periodic memory cleanup task cancelled")
+            break
+        except Exception as e:
+            _log.error(f"Error during periodic memory cleanup: {e}")
+
+
 # Context manager to initialize and clean up the lifespan of the FastAPI app
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -131,6 +151,11 @@ async def lifespan(app: FastAPI):
 
     # Start the background queue processor
     queue_task = asyncio.create_task(orchestrator.process_queue())
+    
+    # Start periodic memory cleanup if configured
+    cleanup_task = None
+    if docling_serve_settings.auto_clear_converters_interval:
+        cleanup_task = asyncio.create_task(_periodic_memory_cleanup(orchestrator))
 
     yield
 
@@ -140,6 +165,14 @@ async def lifespan(app: FastAPI):
         await queue_task
     except asyncio.CancelledError:
         _log.info("Queue processor cancelled.")
+    
+    # Cancel periodic cleanup task if running
+    if cleanup_task is not None:
+        cleanup_task.cancel()
+        try:
+            await cleanup_task
+        except asyncio.CancelledError:
+            pass
 
     # Remove scratch directory in case it was a tempfile
     if docling_serve_settings.scratch_path is not None:
