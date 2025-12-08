@@ -267,13 +267,14 @@ class RedisTaskStatusMixin:
 def get_async_orchestrator() -> BaseOrchestrator:
     if docling_serve_settings.eng_kind == AsyncEngine.LOCAL:
         from docling_jobkit.convert.manager import (
-            DoclingConverterManager,
             DoclingConverterManagerConfig,
         )
         from docling_jobkit.orchestrators.local.orchestrator import (
             LocalOrchestrator,
             LocalOrchestratorConfig,
         )
+
+        from docling_serve.custom_converter import get_converter_manager
 
         local_config = LocalOrchestratorConfig(
             num_workers=docling_serve_settings.eng_loc_num_workers,
@@ -294,7 +295,7 @@ def get_async_orchestrator() -> BaseOrchestrator:
             table_batch_size=docling_serve_settings.table_batch_size,
             batch_polling_interval_seconds=docling_serve_settings.batch_polling_interval_seconds,
         )
-        cm = DoclingConverterManager(config=cm_config)
+        cm = get_converter_manager(config=cm_config)
 
         return LocalOrchestrator(config=local_config, converter_manager=cm)
 
