@@ -506,7 +506,11 @@ def create_app():  # noqa: C901
         )
 
         if not completed:
-            # TODO: abort task!
+            # Clean up the abandoned task
+            async def _cleanup_timeout():
+                await orchestrator.delete_task(task_id=task.task_id)
+            background_tasks.add_task(_cleanup_timeout)
+
             raise HTTPException(
                 status_code=504,
                 detail=f"Conversion is taking too long. The maximum wait time is configure as DOCLING_SERVE_MAX_SYNC_WAIT={docling_serve_settings.max_sync_wait}.",
@@ -562,7 +566,11 @@ def create_app():  # noqa: C901
         )
 
         if not completed:
-            # TODO: abort task!
+            # Clean up the abandoned task
+            async def _cleanup_timeout():
+                await orchestrator.delete_task(task_id=task.task_id)
+            background_tasks.add_task(_cleanup_timeout)
+
             raise HTTPException(
                 status_code=504,
                 detail=f"Conversion is taking too long. The maximum wait time is configure as DOCLING_SERVE_MAX_SYNC_WAIT={docling_serve_settings.max_sync_wait}.",
@@ -762,7 +770,11 @@ def create_app():  # noqa: C901
             )
 
             if not completed:
-                # TODO: abort task!
+                # Clean up the abandoned task
+                async def _cleanup_timeout():
+                    await orchestrator.delete_task(task_id=task.task_id)
+                background_tasks.add_task(_cleanup_timeout)
+
                 raise HTTPException(
                     status_code=504,
                     detail=f"Conversion is taking too long. The maximum wait time is configure as DOCLING_SERVE_MAX_SYNC_WAIT={docling_serve_settings.max_sync_wait}.",
@@ -844,7 +856,11 @@ def create_app():  # noqa: C901
             )
 
             if not completed:
-                # TODO: abort task!
+                # Clean up the abandoned task
+                async def _cleanup_timeout():
+                    await orchestrator.delete_task(task_id=task.task_id)
+                background_tasks.add_task(_cleanup_timeout)
+
                 raise HTTPException(
                     status_code=504,
                     detail=f"Conversion is taking too long. The maximum wait time is configure as DOCLING_SERVE_MAX_SYNC_WAIT={docling_serve_settings.max_sync_wait}.",

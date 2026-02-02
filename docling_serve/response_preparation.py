@@ -70,12 +70,9 @@ async def prepare_response(
 
     if docling_serve_settings.single_use_results:
 
-        async def _remove_task_impl():
+        async def _remove_task():
             await asyncio.sleep(docling_serve_settings.result_removal_delay)
             await orchestrator.delete_task(task_id=task_id)
-
-        async def _remove_task():
-            asyncio.create_task(_remove_task_impl())  # noqa: RUF006
 
         background_tasks.add_task(_remove_task)
 
