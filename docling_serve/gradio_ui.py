@@ -24,6 +24,7 @@ from docling.datamodel.pipeline_options import (
 )
 from docling_core.types.doc.base import TableRefMode
 
+from docling_jobkit.datamodel.convert import _DEFAULT_TABLE_STRUCTURE_MODEL
 from docling_serve.helper_functions import _to_list_of_strings
 from docling_serve.settings import docling_serve_settings, uvicorn_settings
 
@@ -697,7 +698,7 @@ with gr.Blocks(
                         ("GLM-OCR", TableStructureModel.GLM_OCR.value),
                     ],
                     label="Table Structure Model",
-                    value=TableStructureModel.TABLEFORMER.value,
+                    value=_DEFAULT_TABLE_STRUCTURE_MODEL.value,
                 )
             with gr.Column(scale=2):
                 table_mode = gr.Radio(
