@@ -3,6 +3,7 @@ import importlib
 import itertools
 import json
 import logging
+import os
 import ssl
 import sys
 import tempfile
@@ -22,6 +23,7 @@ from docling.datamodel.pipeline_options import (
     TableStructureModel,
     TableStructureOptions,
 )
+from docling.datamodel.vlm_model_specs import VlmModelType
 from docling_core.types.doc.base import TableRefMode
 
 from docling_jobkit.datamodel.convert import _DEFAULT_TABLE_STRUCTURE_MODEL
@@ -301,6 +303,7 @@ def process_url(
     image_export_mode,
     table_export_mode,
     pipeline,
+    vlm_pipeline_model,
     ocr,
     force_ocr,
     ocr_engine,
@@ -316,28 +319,31 @@ def process_url(
     do_picture_description,
 ):
     target = {"kind": "zip" if return_as_file else "inbody"}
+    options = {
+        "to_formats": to_formats,
+        "image_export_mode": image_export_mode,
+        "table_export_mode": table_export_mode,
+        "pipeline": pipeline,
+        "ocr": ocr,
+        "force_ocr": force_ocr,
+        "ocr_engine": ocr_engine,
+        "ocr_lang": _to_list_of_strings(ocr_lang),
+        "pdf_backend": pdf_backend,
+        "table_structure_model": table_structure_model,
+        "table_mode": table_mode,
+        "abort_on_error": abort_on_error,
+        "do_code_enrichment": do_code_enrichment,
+        "do_formula_enrichment": do_formula_enrichment,
+        "do_picture_classification": do_picture_classification,
+        "do_picture_description": do_picture_description,
+    }
+    if pipeline == "vlm" and vlm_pipeline_model:
+        options["vlm_pipeline_model"] = vlm_pipeline_model
     parameters = {
         "sources": [
             {"kind": "http", "url": source} for source in input_sources.split(",")
         ],
-        "options": {
-            "to_formats": to_formats,
-            "image_export_mode": image_export_mode,
-            "table_export_mode": table_export_mode,
-            "pipeline": pipeline,
-            "ocr": ocr,
-            "force_ocr": force_ocr,
-            "ocr_engine": ocr_engine,
-            "ocr_lang": _to_list_of_strings(ocr_lang),
-            "pdf_backend": pdf_backend,
-            "table_structure_model": table_structure_model,
-            "table_mode": table_mode,
-            "abort_on_error": abort_on_error,
-            "do_code_enrichment": do_code_enrichment,
-            "do_formula_enrichment": do_formula_enrichment,
-            "do_picture_classification": do_picture_classification,
-            "do_picture_description": do_picture_description,
-        },
+        "options": options,
         "target": target,
     }
     if (
@@ -388,6 +394,7 @@ def process_file(
     image_export_mode,
     table_export_mode,
     pipeline,
+    vlm_pipeline_model,
     ocr,
     force_ocr,
     ocr_engine,
@@ -411,27 +418,30 @@ def process_file(
     ]
     target = {"kind": "zip" if return_as_file else "inbody"}
 
+    options = {
+        "to_formats": to_formats,
+        "image_export_mode": image_export_mode,
+        "table_export_mode": table_export_mode,
+        "pipeline": pipeline,
+        "ocr": ocr,
+        "force_ocr": force_ocr,
+        "ocr_engine": ocr_engine,
+        "ocr_lang": _to_list_of_strings(ocr_lang),
+        "pdf_backend": pdf_backend,
+        "table_structure_model": table_structure_model,
+        "table_mode": table_mode,
+        "abort_on_error": abort_on_error,
+        "return_as_file": return_as_file,
+        "do_code_enrichment": do_code_enrichment,
+        "do_formula_enrichment": do_formula_enrichment,
+        "do_picture_classification": do_picture_classification,
+        "do_picture_description": do_picture_description,
+    }
+    if pipeline == "vlm" and vlm_pipeline_model:
+        options["vlm_pipeline_model"] = vlm_pipeline_model
     parameters = {
         "sources": files_data,
-        "options": {
-            "to_formats": to_formats,
-            "image_export_mode": image_export_mode,
-            "table_export_mode": table_export_mode,
-            "pipeline": pipeline,
-            "ocr": ocr,
-            "force_ocr": force_ocr,
-            "ocr_engine": ocr_engine,
-            "ocr_lang": _to_list_of_strings(ocr_lang),
-            "pdf_backend": pdf_backend,
-            "table_structure_model": table_structure_model,
-            "table_mode": table_mode,
-            "abort_on_error": abort_on_error,
-            "return_as_file": return_as_file,
-            "do_code_enrichment": do_code_enrichment,
-            "do_formula_enrichment": do_formula_enrichment,
-            "do_picture_classification": do_picture_classification,
-            "do_picture_description": do_picture_description,
-        },
+        "options": options,
         "target": target,
     }
 
@@ -657,6 +667,23 @@ with gr.Blocks(
                     label="Pipeline type",
                     value=ProcessingPipeline.STANDARD.value,
                 )
+            with gr.Column(scale=1, min_width=200):
+                _vlm_model_default = (
+                    VlmModelType.GLM_OCR.value
+                    if os.environ.get("DOCLING_USE_GLM_OCR_LAYOUT", "").lower()
+                    in ("true", "1", "yes")
+                    else VlmModelType.GRANITEDOCLING.value
+                )
+                vlm_pipeline_model = gr.Radio(
+                    [
+                        ("GraniteDocling (default)", VlmModelType.GRANITEDOCLING.value),
+                        ("GraniteVision", VlmModelType.GRANITE_VISION.value),
+                        ("GraniteVision Ollama", VlmModelType.GRANITE_VISION_OLLAMA.value),
+                        ("GLM-OCR", VlmModelType.GLM_OCR.value),
+                    ],
+                    label="VLM Model (when Pipeline=VLM)",
+                    value=_vlm_model_default,
+                )
         with gr.Row():
             with gr.Column(scale=1, min_width=200):
                 ocr = gr.Checkbox(label="Enable OCR", value=True)
@@ -807,6 +834,7 @@ with gr.Blocks(
             image_export_mode,
             table_export_mode,
             pipeline,
+            vlm_pipeline_model,
             ocr,
             force_ocr,
             ocr_engine,
@@ -897,6 +925,7 @@ with gr.Blocks(
             image_export_mode,
             table_export_mode,
             pipeline,
+            vlm_pipeline_model,
             ocr,
             force_ocr,
             ocr_engine,
