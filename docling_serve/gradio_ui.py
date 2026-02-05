@@ -19,6 +19,7 @@ from docling.datamodel.pipeline_options import (
     PdfBackend,
     ProcessingPipeline,
     TableFormerMode,
+    TableStructureModel,
     TableStructureOptions,
 )
 from docling_core.types.doc.base import TableRefMode
@@ -304,6 +305,7 @@ def process_url(
     ocr_engine,
     ocr_lang,
     pdf_backend,
+    table_structure_model,
     table_mode,
     abort_on_error,
     return_as_file,
@@ -327,6 +329,7 @@ def process_url(
             "ocr_engine": ocr_engine,
             "ocr_lang": _to_list_of_strings(ocr_lang),
             "pdf_backend": pdf_backend,
+            "table_structure_model": table_structure_model,
             "table_mode": table_mode,
             "abort_on_error": abort_on_error,
             "do_code_enrichment": do_code_enrichment,
@@ -389,6 +392,7 @@ def process_file(
     ocr_engine,
     ocr_lang,
     pdf_backend,
+    table_structure_model,
     table_mode,
     abort_on_error,
     return_as_file,
@@ -418,6 +422,7 @@ def process_file(
             "ocr_engine": ocr_engine,
             "ocr_lang": _to_list_of_strings(ocr_lang),
             "pdf_backend": pdf_backend,
+            "table_structure_model": table_structure_model,
             "table_mode": table_mode,
             "abort_on_error": abort_on_error,
             "return_as_file": return_as_file,
@@ -685,6 +690,16 @@ with gr.Blocks(
                     value=PdfBackend.DLPARSE_V4.value,
                 )
             with gr.Column(scale=2):
+                table_structure_model = gr.Radio(
+                    [
+                        ("TableFormer (default)", TableStructureModel.TABLEFORMER.value),
+                        ("HunyuanOCR", TableStructureModel.HUNYUAN.value),
+                        ("GLM-OCR", TableStructureModel.GLM_OCR.value),
+                    ],
+                    label="Table Structure Model",
+                    value=TableStructureModel.TABLEFORMER.value,
+                )
+            with gr.Column(scale=2):
                 table_mode = gr.Radio(
                     [(v.value.capitalize(), v.value) for v in TableFormerMode],
                     label="Table Mode",
@@ -796,6 +811,7 @@ with gr.Blocks(
             ocr_engine,
             ocr_lang,
             pdf_backend,
+            table_structure_model,
             table_mode,
             abort_on_error,
             return_as_file,
@@ -885,6 +901,7 @@ with gr.Blocks(
             ocr_engine,
             ocr_lang,
             pdf_backend,
+            table_structure_model,
             table_mode,
             abort_on_error,
             return_as_file,
